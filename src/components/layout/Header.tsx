@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -13,6 +13,7 @@ const Header = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const isMobile = useIsMobile();
   const [isScrolled, setIsScrolled] = useState(false);
+  const navigate = useNavigate();
   
   // Track scroll position for header styling
   useEffect(() => {
@@ -23,6 +24,11 @@ const Header = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: <BarChart2 className="w-5 h-5 mr-2" /> },
@@ -41,7 +47,7 @@ const Header = () => {
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/" className="flex items-center">
           <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
-            habitforge
+            WillfulyFit
           </span>
         </Link>
         
@@ -139,7 +145,7 @@ const Header = () => {
                         <Button 
                           variant="outline" 
                           className="w-full" 
-                          onClick={logout}
+                          onClick={handleLogout}
                         >
                           Sign Out
                         </Button>
