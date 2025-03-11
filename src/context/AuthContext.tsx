@@ -9,6 +9,7 @@ type User = {
   goals: string[];
   preferredWorkouts: string[];
   createdAt: Date;
+  photoURL?: string; // Added photoURL property as optional
 };
 
 type AuthContextType = {
@@ -30,6 +31,7 @@ const mockUser: User = {
   goals: ['Lose weight', 'Build muscle'],
   preferredWorkouts: ['Yoga', 'HIIT'],
   createdAt: new Date(),
+  photoURL: 'https://randomuser.me/api/portraits/women/44.jpg', // Added mock photo URL
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

@@ -6,6 +6,7 @@ import DefaultLayout from '@/components/layout/DefaultLayout';
 import { useAuth } from '@/context/AuthContext';
 import { ChevronRight, Play, Users, Award, BarChart, Dumbbell, Zap, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils'; // Added missing import
 
 const HomePage = () => {
   const { isAuthenticated } = useAuth();
