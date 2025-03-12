@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -11,7 +10,9 @@ type User = {
   goals: string[];
   preferredWorkouts: string[];
   createdAt: Date;
-  photoURL?: string; // Added photoURL property as optional
+  photoURL?: string; 
+  age?: number; // Added age property as optional
+  workoutDuration?: number; // Added workoutDuration as optional
 };
 
 type AuthContextType = {
@@ -32,7 +33,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check for existing session on component mount
     const checkSession = async () => {
       setIsLoading(true);
       
@@ -55,6 +55,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               preferredWorkouts: metadata.preferredWorkouts || [],
               createdAt: new Date(authUser.created_at),
               photoURL: metadata.photoURL,
+              age: metadata.age,
+              workoutDuration: metadata.workoutDuration,
             };
             
             setUser(userObj);
@@ -69,7 +71,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     checkSession();
     
-    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setIsLoading(true);
       
@@ -89,6 +90,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             preferredWorkouts: metadata.preferredWorkouts || [],
             createdAt: new Date(authUser.created_at),
             photoURL: metadata.photoURL,
+            age: metadata.age,
+            workoutDuration: metadata.workoutDuration,
           };
           
           setUser(userObj);
@@ -115,7 +118,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (error) throw error;
       
-      // User data will be set by the auth state change listener
     } catch (error: any) {
       toast({
         title: 'Login failed',
@@ -152,7 +154,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: 'Please check your email for verification',
       });
       
-      // User data will be set by the auth state change listener if email verification is not required
     } catch (error: any) {
       toast({
         title: 'Signup failed',
