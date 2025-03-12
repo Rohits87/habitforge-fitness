@@ -1,11 +1,12 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Loader2, Calendar, Dumbbell, Clock } from 'lucide-react';
+import { Loader2, Calendar, Dumbbell, Clock, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
+import OnboardingForm from '@/components/OnboardingForm';
+import WorkoutExclusionsDialog from '@/components/WorkoutExclusionsDialog';
 
 type Exercise = {
   name: string;
@@ -27,18 +28,40 @@ type Workout = {
 };
 
 const Dashboard = () => {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
   const navigate = useNavigate();
   const [workout, setWorkout] = useState<Workout | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [exclusionsOpen, setExclusionsOpen] = useState(false);
+  const [excludedBodyParts, setExcludedBodyParts] = useState<string[]>([]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate('/login');
+    } else if (isAuthenticated && user) {
+      const hasCompletedOnboarding = user.fitnessLevel && user.goals && user.goals.length > 0;
+      setShowOnboarding(!hasCompletedOnboarding);
     }
-  }, [isLoading, isAuthenticated, navigate]);
+  }, [isLoading, isAuthenticated, navigate, user]);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error('Failed to log out. Please try again.');
+    }
+  };
 
   const generateWorkout = async () => {
+    if (!user) return;
+    
+    setExclusionsOpen(true);
+  };
+  
+  const handleGenerateWithExclusions = async () => {
     if (!user) return;
     
     setIsGenerating(true);
@@ -49,7 +72,8 @@ const Dashboard = () => {
           fitnessLevel: user.fitnessLevel,
           goals: user.goals,
           preferredWorkouts: user.preferredWorkouts,
-          duration: 60 // Default to 60 minutes
+          duration: 60,
+          excludeBodyParts: excludedBodyParts
         }
       });
       
@@ -75,10 +99,20 @@ const Dashboard = () => {
       </div>
     );
   }
+  
+  if (showOnboarding) {
+    return <OnboardingForm onComplete={() => setShowOnboarding(false)} />;
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Welcome, {user?.name}!</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Welcome, {user?.name}!</h1>
+        <Button variant="outline" onClick={handleLogout}>
+          <LogOut className="mr-2 h-4 w-4" />
+          Logout
+        </Button>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow-md p-6">
@@ -186,6 +220,17 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+      
+      <WorkoutExclusionsDialog 
+        open={exclusionsOpen}
+        onClose={() => setExclusionsOpen(false)}
+        excludedBodyParts={excludedBodyParts}
+        setExcludedBodyParts={setExcludedBodyParts}
+        onConfirm={() => {
+          setExclusionsOpen(false);
+          handleGenerateWithExclusions();
+        }}
+      />
     </div>
   );
 };
